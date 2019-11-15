@@ -14303,6 +14303,30 @@ load_autohotkey()
 
 #----------------------------------------------------------------
 
+# TODO: fix metadata
+
+w_metadata behringer_synthtool apps \
+    title="Behringer SynthTool for Windows" \
+    publisher="Ron Yorston / Busybox authors" \
+    year="2015" \
+    media="download" \
+    file1="SynthTool V2.0 Win.zip"
+
+# Apparently it's C++ software with Qt5 Frontend (17.11.2019)
+
+load_behringer_synthtool()
+{
+    # TODO: Export checksum
+    w_download http://downloads.music-group.com/software/behringer/SynthTool%20V2.0%20Win.zip
+
+    w_extractor "$W_CACHE/$W_PACKAGE/$file1" "$W_CACHE/$W_PACKAGE"
+
+    w_try "$WINE" "$W_CACHE/$W_PACKAGE/SynthTool V2.0.0.exe"
+}
+
+
+#----------------------------------------------------------------
+
 w_metadata busybox apps \
     title="BusyBox FRP-2121" \
     publisher="Ron Yorston / Busybox authors" \
