@@ -191,7 +191,7 @@ fi
 # Export W_FIXME messages by default
 if [ -z "$WINETRICKS_NO_FIXME" ]; then
     unset W_FIXME
-elif [ -z "$WINETRICKS_NO_FIXME" ]; then
+elif [ -n "$WINETRICKS_NO_FIXME" ]; then
     W_FIXME=1
 fi
 
@@ -307,14 +307,18 @@ w_debug()
 w_fixme()
 {
     w_message="$1"
+
+    # Shift
     if [ -n "$w_message" ]; then
         shift 1
     elif [ -z "$w_message" ]; then
         w_die bug "w_fixme was parsed without any value"
     fi
 
-    [ -n "$W_FIXME" ] && printf '%s\n' "FIXME: $w_message"
+    # Output message
+    [ -z "$W_FIXME" ] && printf '%s\n' "FIXME: $w_message"
 
+    # Unset
     unset w_message
 }
 
@@ -14895,6 +14899,100 @@ load_ie7()
 
 #----------------------------------------------------------------
 
+# Relevant merge request with references - https://github.com/Kreytricks/kreytricks/pull/41
+
+w_metadata ie8_new dlls \
+    title="Internet Explorer 8" \
+    publisher="Microsoft" \
+    year="2009" \
+    media="download" \
+    file1="IE8-WindowsXP-x86-ENU.exe" \
+    file2="IE8-WindowsServer2003-x64-ENU.exe" \
+    installed_file1="C:/windows/ie8_main.log"
+
+load_ie8_new()
+{
+    # Fetch - These are for winxp
+    w_download https://download.microsoft.com/download/C/C/0/CC0BD555-33DD-411E-936B-73AC6F95AE11/IE8-WindowsXP-x86-ENU.exe 5a2c6c82774bfe99b175f50a05b05bcd1fac7e9d0e54db2534049209f50cd6ef
+
+    # Also fetch 64-bit
+    if [ "$W_ARCH" = win64 ]; then
+        w_download http://download.microsoft.com/download/7/5/4/754D6601-662D-4E39-9788-6F90D8E5C097/$file2 bcff753e92ceabf31cfefaa6def146335c7cb27a50b95cd4f4658a0c3326f499
+    fi
+
+    # File 'IE8-WindowsXP-x86-ENU.exe' is 'PE32 executable (GUI) Intel 80386, for MS Windows' -> 32-bit executable
+    w_fixme "Make a tracking for ie8 running on 64-bit wineprefix"
+    if w_workaround_wine_bug XXXX; then
+        w_fixme "Add workaround to run on 64-bit wineprefix"
+
+        # Make sure that wine libs are used instead of provided
+        w_override_dlls native admparse advpack hmmapi icardie ieakeng ieaksie ieakui iedkcs32 iedvtool ieframe iepeers iernonce iertutil iesetup ieui inseng jscript jsdbgui jsdebuggeride jsprofilercore jsprofilerui licmgr10 msfeedsbs mshtml mshtmler msrating occache sqmapi urlmon vbscript webcheck wininet
+
+        # Requires iertutil.dll AND urlmon.dll (https://github.com/Kreytricks/kreytricks/pull/41#issuecomment-554661572)
+        w_fixme "Verb ie8 asks user-input for overwrite"
+        w_fixme "Requires iertutil.dll AND urlmon.dll which are not winelibbed, exporting these from file $file1"
+        7z x "$W_CACHE/$W_PACKAGE/$file1" "-o$WINEPREFIX/drive_c/Program Files/Internet Explorer" iexplore.exe iertutil.dll urlmon.dll || w_die "Unable to export file 'iexplore.exe' in '$WINEPREFIX/drive_c/Program Files/Internet Explorer/'"
+    elif ! w_workaround_wine_bug XXXX; then
+        w_debug "This system is able to run file $file1 on 64-bit wineprefix"
+        w_fixme "Verb ie8 installation of 32-bit version can be improved using arguments (https://github.com/Kreytricks/kreytricks/pull/41#issuecomment-554583771)"
+        "$WINE" "$W_CACHE/$W_PACKAGE/$file1"
+
+        # Capture the error code
+        case $? in
+          0)
+              w_info "File $file1 returned $?, assuming that it was installed correctly"
+              w_warn "This may return $? even on failure"
+          ;;
+          4) w_warn "File $file1 returned $?, which **SEEMS TO** indicate invalid argument or '\help' used" ;;
+          7) w_die "File $file1 returned $? which error code which seems to be related to system not supported, trigger for this is unknown and required to run on 64-bit wineprefix (https://github.com/Kreytricks/kreytricks/pull/41\#issuecomment-554576478)" ;;
+          # Diagnostics for error code - https://github.com/Kreytricks/kreytricks/pull/41#issuecomment-554580062
+          14) w_die "File $file1 returned $? which error code seems to indicate unsupported winver checked from 'iexplore.exe' in current wineprefix (https://github.com/Kreytricks/kreytricks/pull/41#issuecomment-554580062)" ;;
+          # Diagnostics for error code - https://github.com/Kreytricks/kreytricks/pull/41#issuecomment-554658319
+          130) w_warn "FIle $file1 returned $? which seems to be a permission issue" ;;
+          *) w_die "File $file1 returned error code '$?' which is unknown to winetricks, please make an issue about it with method to reproduce it"
+        esac
+    else
+        w_die 125 "ie8 - w_workaround_wine_bug XXXX"
+    fi
+
+    # Also install 64-bit version
+    if [ "$W_ARCH" = win64 ]; then
+
+        w_fixme "File $file2 (64-bit version of ie6) doesn't work"
+        w_fixme "file a winebug for $file2 runtime"
+        # https://bugs.winehq.org/show_bug.cgi?id=34048
+        if w_workaround_wine_bug 34048; then
+            [ ! -d "$WINEPREFIX/drive_c/Program Files (x86)/Internet Explorer" ] && { mkdir -p "$WINEPREFIX/drive_c/Program Files (x86)/Internet Explorer" || w_die 1 "Unable to make a new directory in '$WINEPREFIX/drive_c/Program Files (x86)/Internet Explorer'" ;}
+            # Also requires iertutil.dll AND urlmon.dll
+            w_fixme "Requires iertutil.dll AND urlmon.dll which are not winelibbed"
+            7z x "$W_CACHE/$W_PACKAGE/$file1" "-o$WINEPREFIX/drive_c/Program Files (x86)/Internet Explorer" iexplore.exe iertutil.dll urlmon.dll || w_die "Unable to export file 'iexplore.exe' in '$WINEPREFIX/drive_c/Program Files/Internet Explorer/'"
+
+        elif ! w_workaround_wine_bug 34048; then
+            # Do not use w_try since we are capturing error code
+            w_fixme "Verb ie8 installation of 64-bit version can be improved using arguments (https://github.com/Kreytricks/kreytricks/pull/41#issuecomment-554583771)"
+            "$WINE" "$W_CACHE/$W_PACKAGE/$file2"
+
+            # Capture the error code
+            case $? in
+                0)
+                    w_info "File $file2 returned $?, assuming that it was installed correctly"
+                    w_warn "This may return $? even on failure"
+                ;;
+                7) w_die "File $file2 returned $? which error code which seems to be related to system not supported, trigger for this is unknown and required to run on 64-bit wineprefix (https://github.com/Kreytricks/kreytricks/pull/41#issuecomment-554576478)" ;;
+                *) w_die "File $file2 returned error code '$?' which is unknown to winetricks, please make an issue about it with method to reproduce it"
+            esac
+        else
+            w_die 125 "ie8 - w_workaround_wine_bug XXXX (64-bit)"
+        fi
+    fi
+
+    # # DO-NOT-MERGE: Remove this prior to merge
+    # w_warn "EXECUTING!!"
+    # "$WINE" "$WINEPREFIX/drive_c/Program Files/Internet Explorer/iexplore.exe"
+}
+
+#----------------------------------------------------------------
+
 w_metadata ie8 dlls \
     title="Internet Explorer 8" \
     publisher="Microsoft" \
@@ -14905,10 +15003,11 @@ w_metadata ie8 dlls \
 
 load_ie8()
 {
-    # Installer itself bails out
+    # File 'IE8-WindowsXP-x86-ENU.exe' is 'PE32 executable (GUI) Intel 80386, for MS Windows' -> 32-bit executable
     w_package_unsupported_win64
 
     # Bundled in Windows 7, so refuses to install. Works with XP:
+    # QA: Reference?
     w_set_winver winxp
 
     # Unregister Wine IE
@@ -14918,6 +15017,7 @@ load_ie8()
         w_try "$WINE" iexplore -unregserver
     fi
 
+    # QA: Why is this needed?
     w_call msls31
 
     # Change the override to the native so we are sure we use and register them
@@ -14935,8 +15035,8 @@ load_ie8()
     fi
     for dll in browseui inseng itircl itss jscript msctf mshtml shdoclc shdocvw shlwapi urlmon
     do
-        test -f "$W_SYSTEM32_DLLS"/$dll.dll &&
-        mv "$W_SYSTEM32_DLLS"/$dll.dll "$W_SYSTEM32_DLLS"/$dll.dll.bak
+        test -f "$W_SYSTEM32_DLLS/$dll.dll" &&
+        mv "$W_SYSTEM32_DLLS/$dll.dll" "$W_SYSTEM32_DLLS/$dll.dll.bak"
     done
 
     # See https://bugs.winehq.org/show_bug.cgi?id=16013
@@ -14944,8 +15044,8 @@ load_ie8()
     w_download https://github.com/Winetricks/winetricks/raw/master/files/winetest.cat 5d18ab44fc289100ccf4b51cf614cc2d36f7ca053e557e2ba973811293c97d38
 
     # Put a dummy catalog file in place
-    mkdir -p "$W_SYSTEM32_DLLS"/catroot/\{f750e6c3-38ee-11d1-85e5-00c04fc295ee\}
-    w_try cp -f "$W_CACHE"/ie8/winetest.cat "$W_SYSTEM32_DLLS"/catroot/\{f750e6c3-38ee-11d1-85e5-00c04fc295ee\}/oem0.cat
+    mkdir -p "$W_SYSTEM32_DLLS/catroot/\{f750e6c3-38ee-11d1-85e5-00c04fc295ee\}"
+    w_try cp -f "$W_CACHE/ie8/winetest.cat" "$W_SYSTEM32_DLLS/catroot/\{f750e6c3-38ee-11d1-85e5-00c04fc295ee\}/oem0.cat"
 
     w_download https://download.microsoft.com/download/C/C/0/CC0BD555-33DD-411E-936B-73AC6F95AE11/IE8-WindowsXP-x86-ENU.exe 5a2c6c82774bfe99b175f50a05b05bcd1fac7e9d0e54db2534049209f50cd6ef
     if [ -n "$W_UNATTENDED_SLASH_QUIET" ]; then
@@ -14953,7 +15053,6 @@ load_ie8()
     else
         quiet=""
     fi
-    w_try_cd "$W_CACHE/$W_PACKAGE"
 
     # KLUDGE: if / is writable, having a Z: mapping to it causes ie8 to put temporary directories on Z:\
     # so hide it temporarily.  This is not very robust!
@@ -14963,7 +15062,7 @@ load_ie8()
     # FIXME: There's an option for /updates-noupdates to disable checking for updates, but that
     # forces the install to fail on Wine. Not sure if it's an IE8 or Wine bug...
     # FIXME: can't check status, as it always reports failure on wine?
-    "$WINE" IE8-WindowsXP-x86-ENU.exe $quiet
+    "$WINE" "$W_CACHE/$W_PACKAGE/IE8-WindowsXP-x86-ENU.exe" $quiet
     # END KLUDGE: restore Z:, assuming user didn't kill us
     mv "$WINEPREFIX/dosdevices/z:.bak_wt" "$WINEPREFIX/dosdevices/z:"
 
@@ -14981,7 +15080,7 @@ load_ie8()
         wshcon.dll wshext.dll asctrls.ocx hhctrl.ocx mscomct2.ocx \
         plugin.ocx proctexe.ocx tdc.ocx uxtheme.dll webcheck.dll wshom.ocx
     do
-        "$WINE" regsvr32 /i $i > /dev/null 2>&1
+        "$WINE" regsvr32 /i "$W_SYSTEM32_DLLS/$i" > /dev/null 2>&1
     done
 
     if w_workaround_wine_bug 25648 "Setting TabProcGrowth=0 to avoid hang"; then
@@ -14992,27 +15091,27 @@ REGEDIT4
 "TabProcGrowth"=dword:00000000
 
 _EOF_
-        w_try_regedit "$W_TMP_WIN"\\set-tabprocgrowth.reg
+        w_try_regedit "$W_TMP_WIN\\set-tabprocgrowth.reg"
     fi
 
     # Builtin ieproxy is in system32, but ie8's lives in Program Files. Native
     # CLSID path will get overwritten on prefix update. Setting ieproxy to
     # native doesn't help because setupapi ignores DLL overrides. To work
     # around this problem, copy native ieproxy to system32.
-    w_try cp -f "${W_PROGRAMS_X86_UNIX}/Internet Explorer/ieproxy.dll" "$W_SYSTEM32_DLLS"
+    w_try cp -f "$W_PROGRAMS_X86_UNIX/Internet Explorer/ieproxy.dll" "$W_SYSTEM32_DLLS"
 
     # Seeing is believing
     case $WINETRICKS_GUI in
         none)
-            w_warn "To start ie8, use the command \"$WINE\" '${W_PROGRAMS_WIN}\\\\Internet Explorer\\\\iexplore'"
+            w_warn "To start ie8, use the command \"$WINE\" '$W_PROGRAMS_WIN\\\\Internet Explorer\\\\iexplore'"
             ;;
         *)
-            w_warn "Starting ie8.  To start it later, use the command \"$WINE\" '${W_PROGRAMS_WIN}\\\\Internet Explorer\\\\iexplore'"
-            "$WINE" "${W_PROGRAMS_WIN}\\Internet Explorer\\iexplore" https://www.microsoft.com/windows/internet-explorer > /dev/null 2>&1 &
+            w_warn "Starting ie8.  To start it later, use the command \"$WINE\" '$W_PROGRAMS_WIN\\\\Internet Explorer\\\\iexplore'"
+            "$WINE" "$W_PROGRAMS_WIN\\Internet Explorer\\iexplore" https://www.microsoft.com/windows/internet-explorer > /dev/null 2>&1 &
             ;;
     esac
 
-    w_set_winver 'default'
+    w_set_winver default
 }
 
 #----------------------------------------------------------------
