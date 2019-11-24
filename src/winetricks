@@ -21820,6 +21820,19 @@ load_bioshock2_steam()
 
 #----------------------------------------------------------------
 
+w_metadata blackmesa_steam games \
+    title="Black Mesa" \
+    publisher="Crowbar Collective" \
+    year="2015" \
+    media="download" \
+
+load_blackmesa_steam()
+{
+    w_steam_install_game 362890 "BioShock 2"
+}
+
+#----------------------------------------------------------------
+
 w_metadata borderlands_steam games \
     title="Borderlands (Steam, non-free)" \
     publisher="2K Games" \
