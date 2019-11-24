@@ -19258,6 +19258,35 @@ load_hordesoforcs2_demo()
 
 #----------------------------------------------------------------
 
+# Upstream mensiones vcrun2015 dependency (https://playphoenix.ca/downloads)
+# Blocked by https://bugs.winehq.org/show_bug.cgi?id=4666
+
+w_metadata maplestory_phoenix games \
+    title="Phoenix Maple Story" \
+    publisher="?" \
+    year="?" \
+    media="download" \
+    file1="Phoenix-11-22-19.zip"
+    #installed_exe1="$W_PROGRAMS_X86_WIN/Wizards of the Coast/MTGA/MTGA.exe"
+
+load_maplestory_phoenix()
+{
+    if w_workaround_wine_bug 4666; then
+        w_die fixme "Verb $W_PACKAGE is blocked by winebug 4666 (https://bugs.winehq.org/show_bug.cgi?id=4666)"
+    elif ! w_workaround_wine_bug 4666; then
+        w_download https://playphoenix.ca/Phoenix-11-22-19.zip
+        w_extractor "$W_CACHE/$W_PACKAGE/$file1" "$WINEPREFIX/drive_c/"
+
+        "$WINE" "$WINEPREFIX/drive_c/Phoenix/MapleStory.exe"
+
+        case $? in
+            *) w_warn "File MapleStory.exe returned error code $? which is unknown to winetricks, if you encounter this message then please make a new issue"
+        esac
+    fi
+}
+
+#----------------------------------------------------------------
+
 # https://appdb.winehq.org/objectManager.php?sClass=version&iId=37229
 
 w_metadata mtg_arena games \
