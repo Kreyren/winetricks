@@ -3266,12 +3266,17 @@ w_do_call()
             return 0
         fi
 
+                # We'd like to get rid of W_PACKAGE, but for now, just set it as late as possible.
+        W_PACKAGE=$1
+        w_try "load_$cmd" "$arg"
+        winetricks_stats_log_command "$@"
+
         # Generate shortcut in $WINEPREFIX/${W_PACKAGE}_shortcut.sh
         # shellcheck disable=SC2154
         if [ ! -e "$WINEPREFIX/${W_PACKAGE}_shortcut.sh" ] && [ -z "$winetricks_do_not_generate_shortcut" ] && [ -n "$installed_exe1" ]; then
             w_info "Creating a new shortcut in $WINEPREFIX/${W_PACKAGE}_shortcut.sh"
             # Generate shortcut
-            if [ -z "$(w_custom_shortcut)" ]; then
+            if [ -z "$(w_custom_shortcut 2>/dev/null)" ]; then
                 printf '%s\n' \
                     "#!/bin/sh" \
                     '(' \
@@ -3298,7 +3303,7 @@ w_do_call()
         # If already exists
         elif [ -e "$WINEPREFIX/${W_PACKAGE}_shortcut.sh" ]; then
             w_debug "w_generate_shortcut: File '$WINEPREFIX/${W_PACKAGE}_shortcut.sh' already exists"
-        # If overrriden
+        # If overriden
         elif [ -n "$winetricks_do_not_generate_shortcut" ]; then
             w_debug "w_generate_shortcut: variable winetricks_do_not_generate_shortcut '$winetricks_do_not_generate_shortcut' is non-zero, skipping creation of shortcut"
         # Sanitization for executable permission
@@ -3306,11 +3311,6 @@ w_do_call()
             w_debug "w_generate_shortcut: File '$WINEPREFIX/${W_PACKAGE}_shortcut.sh' is not executable, fixing.."
             chmod +x "$WINEPREFIX/${W_PACKAGE}_shortcut.sh"
         fi
-
-        # We'd like to get rid of W_PACKAGE, but for now, just set it as late as possible.
-        W_PACKAGE=$1
-        w_try "load_$cmd" "$arg"
-        winetricks_stats_log_command "$@"
 
         # User-specific postinstall hook.
         # Source it so the script can call w_download() if needed.
