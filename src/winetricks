@@ -23499,11 +23499,17 @@ execute_command()
 # Open AHK inspector if debugging
 if [ -n "$W_DEBUG_AHK" ]; then
     w_fixme "Improve handling of W_DEBUG variable to call this using 'W_DEBUG=\"+ahk\"'"
+    w_fixme "Do not launch another autohotkey spy if one is already running"
     w_call autohotkey
-    if [ -e "$WINEPREFIX/drive_c/Program Files (x86)/AutoHotkey/AU3_Spy.exe" ]; then
-        w_try "$WINE" "$WINEPREFIX/drive_c/Program Files (x86)/AutoHotKey/AU3_Spy.exe" &
-    elif [ ! -e "$WINEPREFIX/drive_c/Program Files (x86)/AutoHotkey/AU3_Spy.exe" ]; then
-        w_die 1 "File '$WINEPREFIX/drive_c/Program Files (x86)/AutoHotKey/AU3_Spy.exe' doesn't exists assuming variable 'W_DEBUG_AHK' calling autohotkey inspector"
+    # For legacy autohotkey
+    if [ -e "$WINEPREFIX/drive_c/Program Files/AutoHotkey/WindowSpy.ahk" ] && [ -e "$WINEPREFIX/drive_c/Program Files/AutoHotkey/AutoHotkey.exe" ]; then
+        w_try "$WINE" "$WINEPREFIX/drive_c/Program Files/AutoHotkey/AutoHotKey.exe" "$WINEPREFIX/drive_c/Program Files/AutoHotkey/WindowSpy.ahk" &
+    elif [ ! -e "$WINEPREFIX/drive_c/Program Files/AutoHotkey/WindowSpy.ahk" ] && [ -e "$WINEPREFIX/drive_c/Program Files/AutoHotkey/AutoHotkey.exe" ]; then
+        w_die 1 "File '$WINEPREFIX/drive_c/Program Files/AutoHotkey/WindowSpy.ahk' is not available, unable to launch AutoHotKey inspector"
+    elif [ -e "$WINEPREFIX/drive_c/Program Files/AutoHotkey/WindowSpy.ahk" ] && [ ! -e "$WINEPREFIX/drive_c/Program Files/AutoHotkey/AutoHotkey.exe" ]; then
+        w_die 1 "File '$WINEPREFIX/drive_c/Program Files/AutoHotkey/AutoHotKey.exe' is not present, but WindowSpy.ahk exists, if you encounter this message then make a new issue in kreytricks"
+    elif [ ! -e "$WINEPREFIX/drive_c/Program Files/AutoHotkey/WindowSpy.ahk" ] && [ ! -e "$WINEPREFIX/drive_c/Program Files/AutoHotkey/AutoHotkey.exe" ]; then
+        w_die 1 "Unable to launch AutoHotKey inspector inspector since autohotkey is not installed"
     else
         w_die 255 "w_do_call - W_DEBUG_AHK"
     fi
