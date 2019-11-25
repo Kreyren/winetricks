@@ -14,7 +14,7 @@ This fork is true rolling-release where recommended method to sync with upstream
 
 ## Maintainance
 - This fork is less strict and relies mostly on Travis-Cl tests, issues with merged contribution will be blames on the author if there is an issue.
-- Mistakes of new contributors are tolerated and questions related to the project will be answered, if needed project mentors are willing to invest their time in these contributors. If you are unsure what to do then the best way is to make a broken merge request and wait for review and info.
+- Mistakes of new contributors are tolerated and questions related to the project will be answered. If needed project mentors are willing to invest their time into new contributors. If you are unsure of what to do then the best thing to do is to make a broken merge request and wait for review. The review will help guide you on what to do.
 
 ## Compatibility
 Our current ethique is to support everything, so if you are able to run POSIX shell on your system, then we are going to support it.
