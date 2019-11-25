@@ -14403,20 +14403,24 @@ load_adobe_diged4()
 
 #----------------------------------------------------------------
 
+# Do not use AutoHotKey/AutoHotKey which is deprecated since 2014 and replaced by Lexikos
+
 w_metadata autohotkey apps \
     title="AutoHotKey" \
     publisher="autohotkey.org" \
     year="2010" \
     media="download" \
-    file1="AutoHotkey104805_Install.exe" \
-    installed_exe1="$W_PROGRAMS_X86_WIN/AutoHotkey/AutoHotkey.exe"
+    installed_exe1="C:/Program Files/AutoHotkey/AutoHotkey.exe"
 
 load_autohotkey()
 {
-    w_fixme "Implement fetching late"
-    w_download https://github.com/AutoHotkey/AutoHotkey/releases/download/v1.0.48.05/AutoHotkey104805_Install.exe 4311c3e7c29ed2d67f415138360210bc2f55ff78758b20b003b91d775ee207b9
-    w_try_cd "$W_CACHE/$W_PACKAGE"
-    w_try "$WINE" "$file1" $W_UNATTENDED_SLASH_S
+    # https://github.com/Lexikos/AutoHotkey_L
+    ahk_version="$(w_get_github_latest_release Lexikos AutoHotkey_L)"
+
+    w_download "https://github.com/Lexikos/AutoHotkey_L/releases/download/$ahk_version/AutoHotkey_${ahk_version#v}_setup.exe"
+
+    # 25112019 - Returns 0 for success and failure, do not capture error code (https://gist.githubusercontent.com/Kreyren/06a80465d6d3759a7f14b80a0cda68af/raw/b9f46dd7be7bc3ce584e9a31a58ec4ca4dc2fb95/gistfile1.txt)
+    w_try "$WINE" "$W_CACHE/$W_PACKAGE/AutoHotkey_${ahk_version#v}_setup.exe"
 }
 
 #----------------------------------------------------------------
