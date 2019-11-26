@@ -21946,39 +21946,37 @@ load_rocketleague_steam()
         w_info "Rocket League is already installed assuming file '$(w_pathconv -u "$installed_exe1")' present, skipping install"
     fi
 
-    w_fixme "Finish experiment with rocketleague injecting dxvk"
-    if [ -n "$W_USE_EXPERIMENTS" ]; then
-        # Export d9vk in gamedir
-        w_download "https://github.com/Joshua-Ashton/d9vk/releases/download/0.30/$file1"
+    # Export d9vk in gamedir
+    w_download "https://github.com/Joshua-Ashton/d9vk/releases/download/0.30/$file1"
 
-        if [ ! -e "$WINEPREFIX/drive_c/Program Files (x86)/Steam/steamapps/common/rocketleague/Binaries/Win32/dxgi.dll" ]; then
-            w_extractor "$W_CACHE/$W_PACKAGE/$file1" "$WINEPREFIX/drive_c/Program Files (x86)/Steam/steamapps/common/rocketleague/Binaries/Win32/" "${file1%???????}/x64/d3d10.dll" "${file1%???????}/x64/d3d10core.dll" "${file1%???????}/x64/d3d10_1.dll" "${file1%???????}/x64/d3d11.dll" "${file1%???????}/x64/d3d9.dll" "${file1%???????}/x64/dxgi.dll"
-        elif [ -e "$WINEPREFIX/drive_c/Program Files (x86)/Steam/steamapps/common/rocketleague/Binaries/Win32/dxgi.dll" ]; then
-            w_info "Verb $W_PACKAGE has already exported d9vk assuming file '$WINEPREFIX/drive_c/Program Files (x86)/Steam/steamapps/common/rocketleague/Binaries/Win32/dxgi.dll' already present, skipping export"
-        else
-            w_die 255 "rocketleague export of d9vk"
-        fi
-
-        # Export d3dcompiler_47 in gamedir
-        w_download https://download-installer.cdn.mozilla.net/pub/firefox/releases/62.0.3/win32/ach/Firefox%20Setup%2062.0.3.exe "d6edb4ff0a713f417ebd19baedfe07527c6e45e84a6c73ed8c66a33377cc0aca" "FirefoxSetup62.0.3-win32.exe"
-
-        if [ ! -e "$WINEPREFIX/drive_c/Program Files (x86)/Steam/steamapps/common/rocketleague/Binaries/Win32/d3dcompiler_47.dll" ]; then
-            w_extractor "$W_CACHE/$W_PACKAGE/FirefoxSetup62.0.3-win32.exe" "$(w_pathconv -u "$W_PROGRAMS_X86_WIN/Steam/steamapps/common/rocketleague/Binaries/Win32/")" core/d3dcompiler_47.dll
-        elif [ ! -e "$WINEPREFIX/drive_c/Program Files (x86)/Steam/steamapps/common/rocketleague/Binaries/Win32/d3dcompiler_47.dll" ]; then
-            w_info "Verb $W_PACKAGE has already exported d3dcompiler_47.dll assuming file '$WINEPREFIX/drive_c/Program Files (x86)/Steam/steamapps/common/rocketleague/Binaries/Win32/d3dcompiler_47.dll' already present, skipping export"
-          else
-              w_die 255 "rocketleague export of d3dcompiler_47"
-        fi
-
-        # Set d9vk libs as builtin to be injected in the game
-        w_override_app_dlls RocketLeague.exe builtin dgxi
-        w_override_app_dlls RocketLeague.exe builtin d3d9
-        w_override_app_dlls RocketLeague.exe builtin d3d10
-        w_override_app_dlls RocketLeague.exe builtin d3d10_1
-        w_override_app_dlls RocketLeague.exe builtin d3d10core
-        w_override_app_dlls RocketLeague.exe builtin d3d11
-        w_override_app_dlls RocketLeague.exe builtin d3dcompiler_47
+    if [ ! -e "$WINEPREFIX/drive_c/Program Files (x86)/Steam/steamapps/common/rocketleague/Binaries/Win32/dxgi.dll" ]; then
+        w_fixme "Export d9vk libs directly, currently requires  '--strip-components 2'"
+        w_extractor "$W_CACHE/$W_PACKAGE/$file1" "$WINEPREFIX/drive_c/Program Files (x86)/Steam/steamapps/common/rocketleague/Binaries/Win32/" "--strip-components 2 ${file1%???????}/x32/d3d10.dll" "${file1%???????}/x32/d3d10core.dll" "${file1%???????}/x32/d3d10_1.dll" "${file1%???????}/x32/d3d11.dll" "${file1%???????}/x32/d3d9.dll" "${file1%???????}/x32/dxgi.dll"
+    elif [ -e "$WINEPREFIX/drive_c/Program Files (x86)/Steam/steamapps/common/rocketleague/Binaries/Win32/dxgi.dll" ]; then
+        w_info "Verb $W_PACKAGE has already exported d9vk assuming file '$WINEPREFIX/drive_c/Program Files (x86)/Steam/steamapps/common/rocketleague/Binaries/Win32/dxgi.dll' already present, skipping export"
+    else
+        w_die 255 "rocketleague export of d9vk"
     fi
+
+    # Export d3dcompiler_47 in gamedir
+    w_download https://download-installer.cdn.mozilla.net/pub/firefox/releases/62.0.3/win32/ach/Firefox%20Setup%2062.0.3.exe "d6edb4ff0a713f417ebd19baedfe07527c6e45e84a6c73ed8c66a33377cc0aca" "FirefoxSetup62.0.3-win32.exe"
+
+    if [ ! -e "$WINEPREFIX/drive_c/Program Files (x86)/Steam/steamapps/common/rocketleague/Binaries/Win32/d3dcompiler_47.dll" ]; then
+        w_extractor "$W_CACHE/$W_PACKAGE/FirefoxSetup62.0.3-win32.exe" "$(w_pathconv -u "$W_PROGRAMS_X86_WIN/Steam/steamapps/common/rocketleague/Binaries/Win32/")" core/d3dcompiler_47.dll
+    elif [ ! -e "$WINEPREFIX/drive_c/Program Files (x86)/Steam/steamapps/common/rocketleague/Binaries/Win32/d3dcompiler_47.dll" ]; then
+        w_info "Verb $W_PACKAGE has already exported d3dcompiler_47.dll assuming file '$WINEPREFIX/drive_c/Program Files (x86)/Steam/steamapps/common/rocketleague/Binaries/Win32/d3dcompiler_47.dll' already present, skipping export"
+    else
+        w_die 255 "rocketleague export of d3dcompiler_47"
+    fi
+
+    # Set d9vk libs as builtin to be injected in the game
+    w_override_app_dlls RocketLeague.exe native dgxi
+    w_override_app_dlls RocketLeague.exe native d3d9
+    w_override_app_dlls RocketLeague.exe native d3d10
+    w_override_app_dlls RocketLeague.exe native d3d10_1
+    w_override_app_dlls RocketLeague.exe native d3d10core
+    w_override_app_dlls RocketLeague.exe native d3d11
+    w_override_app_dlls RocketLeague.exe native d3dcompiler_47
 
     # Export shortcut
     w_custom_shortcut() {
@@ -22000,7 +21998,6 @@ load_rocketleague_steam()
         export DXVK_HUD=full
         "$WINE" "$(w_pathconv -u "$installed_exe1")"
     fi
-
 }
 
 #----------------------------------------------------------------
