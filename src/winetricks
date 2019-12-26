@@ -16214,6 +16214,25 @@ load_sketchup()
 
 #----------------------------------------------------------------
 
+w_metadata battlenet apps \
+    title="Battle.net client" \
+    publisher="Blizzard" \
+    media="download" \
+    file1="Battle.net-Setup.exe" \
+    installed_exe1="$W_PROGRAMS_X86_WIN\Battle.net\Battle.net.exe"
+
+load_battlenet()
+{
+    # Won't render the GUI corrently if vcrun2015 is not used
+    w_call "vcrun2015"
+
+    w_download_to "$W_PACKAGE" "https://eu.battle.net/download/getInstaller?os=win&installer=Battle.net-Setup.exe" '' "Battle.net-Setup.exe"
+
+    w_try "$WINE" "$W_CACHE/$W_PACKAGE/$file1"
+}
+
+#----------------------------------------------------------------
+
 w_metadata steam apps \
     title="Steam" \
     publisher="Valve" \
@@ -21731,6 +21750,31 @@ load_ut3()
         }
         WinWaitClose
     "
+}
+
+#----------------------------------------------------------------
+
+# TODO: Make a metadata
+
+w_metadata warcraft3 games \
+    title="Warcratt3" \
+    publisher="2D Boy" \
+    year="2008" \
+    media="download" \
+    file1="Warcraft-III-Setup.exe"
+		# TODO: Set once the logic is made since on kreytricks this generates a shortcut
+    #installed_exe1="$W_PROGRAMS_X86_WIN/WorldOfGooDemo/WorldOfGoo.exe"
+
+load_warcraft3()
+{
+	# Fails on invoke (https://github.com/Kreytricks/kreytricks/pull/16#issuecomment-550433897)
+	#w_download_to "$W_PACKAGE" 'https://eu.battle.net/download/getInstaller?os=win&installer=Warcraft-III-Setup.exe' '' "Warcraft-III-Setup.exe"
+	#w_download 'https://us.battle.net/download/getInstaller?os=win&installer=Warcraft-III-Setup.exe'
+
+	# TODO: make w_battlenet_install() - Currently blocked since we don't know the URI for Warcraft3
+	w_call battlenet
+
+	#w_try $WINE "$W_CACHE/$W_PACKAGE/$file1"
 }
 
 #----------------------------------------------------------------
