@@ -1,0 +1,7 @@
+{
+   "extensions.showBuiltin": true,
+   "shellcheck.customArgs": [
+      "--external-sources"
+   ],
+   "editor.wordWrap": "on"
+}
