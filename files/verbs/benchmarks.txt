@@ -1,0 +1,9 @@
+Using winetricks 20190912 - sha256sum: a251311a6490ce546f5c9b450492be26ae8099517cc3ed8c50d6ef065be4ad0d with wine-4.14 and WINEARCH=win32
+3dmark03                 3D Mark 03 (Futuremark, 2003)
+3dmark05                 3D Mark 05 (Futuremark, 2005) [downloadable]
+3dmark06                 3D Mark 06 (Futuremark, 2006)
+3dmark2000               3DMark2000 (MadOnion.com, 2000) [downloadable]
+3dmark2001               3DMark2001 (MadOnion.com, 2001) [downloadable]
+stalker_pripyat_bench    S.T.A.L.K.E.R.: Call of Pripyat benchmark (GSC Game World, 2009)
+unigine_heaven           Unigen Heaven 2.1 Benchmark (Unigen, 2010)
+wglgears                 wglgears (Clinton L. Jeffery, 2005) [downloadable]
