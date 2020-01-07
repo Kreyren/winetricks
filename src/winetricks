@@ -234,7 +234,7 @@ w_askpermission()
             pl*) w_die "Anulowano operację, opuszczanie." ;;
             *) w_die "Operation cancelled, quitting." ;;
         esac
-        die 1
+        w_die 1
     fi
 
     unset _W_timeout
@@ -5735,7 +5735,7 @@ winetricks_init()
                 "${WINE}server" \
                 "$(command -v wineserver 2> /dev/null)" \
                 "$(dirname $WINE)/server/wineserver" \
-                "$(find $(dirname $WINE) -name wineserver -type f)" \
+                "$(find "$(dirname $WINE)" -name wineserver -type f)" \
                 /usr/bin/wineserver-development \
                 /usr/lib/wine/wineserver \
                 /usr/lib/i386-kfreebsd-gnu/wine/wineserver \
@@ -16219,7 +16219,7 @@ w_metadata steam apps \
     publisher="Valve" \
     year="2010" \
     media="download" \
-    file1="SteamInstall.msi" \
+    file1="SteamSetup.exe" \
     installed_exe1="$W_PROGRAMS_X86_WIN/Steam/Steam.exe"
 
 load_steam()
@@ -19345,6 +19345,8 @@ load_mtg_arena()
         w_download "https://mtgarena.downloads.wizards.com/Live/Windows32/versions/1790.733462/MTGAInstaller_0.1.1790.733462.msi"
         export file1="MTGAInstaller_0.1.1790.733462.msi"
         w_warn "Installer is going to complain about permssions set on windows, these doesn't seem to be related to WINE and doesn't affect the runtime of game"
+		elif w_workaround_wine_bug 47820; then
+				true # HOTFIX!
     elif ! w_workaround_wine_bug 47820; true; then
         w_download "https://mtgarena.downloads.wizards.com/Live/Windows32/MTGAInstaller.exe"
         # Requires dotnet? otherwise the installer fails
@@ -19362,7 +19364,7 @@ load_mtg_arena()
     if w_workaround_wine_bug 45898; then
         w_fixme "Make a logic for 45898 in mtg_arena verb"
         w_warn "Affected by https://bugs.winehq.org/show_bug.cgi?id=45898"
-    elif w_workaround_wine_bug 45898; then
+    elif ! w_workaround_wine_bug 45898; then
         w_fixme "Make a logic for 45898 in mtg_arena verb"
     else
         w_die 255 "mtg_arena - 45898"
@@ -19886,6 +19888,7 @@ load_leagueoflegends()
 
 
     # Install d3dx9 wrapper
+		# shellcheck disable=SC2154
     case $leagueoflegends_d3dx9 in
         d9vk)
             w_fixme "Refactor d9vk verb to export it's files in game directory as builtin instead of fucking up whole wineprefix"
@@ -20427,6 +20430,19 @@ load_nfsshift_demo()
         }
         winwaitclose, Setup, Finish
     "
+}
+
+#----------------------------------------------------------------
+
+w_metadata smite games \
+    title="S.M.I.T.E" \
+    publisher="fixme" \
+    year="fixme"
+    #installed_exe1="$W_PROGRAMS_X86_WIN/Bethesda Softworks/Oblivion/Oblivion.exe"
+
+load_smite()
+{
+	w_steam_install_game 386360 "S.M.I.T.E"
 }
 
 #----------------------------------------------------------------
@@ -21573,6 +21589,18 @@ load_torchlight()
 
 #----------------------------------------------------------------
 
+w_metadata tw2_aokee games \
+    title="The Witcher 2: Assasins of Kings Enhanced Edition" \
+    publisher="fixme" \
+    year="fixme"
+
+load_tw2_aokee()
+{
+	w_steam_install_game 20920 "The Witcher 2: Assasins of Kings Enhanced Edition"
+}
+
+#----------------------------------------------------------------
+
 w_metadata twfc games \
     title="Transformers: War for Cybertron" \
     publisher="Activision" \
@@ -21958,17 +21986,6 @@ load_rocketleague_steam()
         w_die 255 "rocketleague export of d9vk"
     fi
 
-    # Export d3dcompiler_47 in gamedir
-    w_download https://download-installer.cdn.mozilla.net/pub/firefox/releases/62.0.3/win32/ach/Firefox%20Setup%2062.0.3.exe "d6edb4ff0a713f417ebd19baedfe07527c6e45e84a6c73ed8c66a33377cc0aca" "FirefoxSetup62.0.3-win32.exe"
-
-    if [ ! -e "$WINEPREFIX/drive_c/Program Files (x86)/Steam/steamapps/common/rocketleague/Binaries/Win32/d3dcompiler_47.dll" ]; then
-        w_extractor "$W_CACHE/$W_PACKAGE/FirefoxSetup62.0.3-win32.exe" "$(w_pathconv -u "$W_PROGRAMS_X86_WIN/Steam/steamapps/common/rocketleague/Binaries/Win32/")" core/d3dcompiler_47.dll
-    elif [ ! -e "$WINEPREFIX/drive_c/Program Files (x86)/Steam/steamapps/common/rocketleague/Binaries/Win32/d3dcompiler_47.dll" ]; then
-        w_info "Verb $W_PACKAGE has already exported d3dcompiler_47.dll assuming file '$WINEPREFIX/drive_c/Program Files (x86)/Steam/steamapps/common/rocketleague/Binaries/Win32/d3dcompiler_47.dll' already present, skipping export"
-    else
-        w_die 255 "rocketleague export of d3dcompiler_47"
-    fi
-
     # Set d9vk libs as builtin to be injected in the game
     w_override_app_dlls RocketLeague.exe native dgxi
     w_override_app_dlls RocketLeague.exe native d3d9
@@ -21976,7 +21993,6 @@ load_rocketleague_steam()
     w_override_app_dlls RocketLeague.exe native d3d10_1
     w_override_app_dlls RocketLeague.exe native d3d10core
     w_override_app_dlls RocketLeague.exe native d3d11
-    w_override_app_dlls RocketLeague.exe native d3dcompiler_47
 
     # Export shortcut
     w_custom_shortcut() {
