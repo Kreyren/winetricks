@@ -19195,6 +19195,33 @@ load_fifa11_demo()
 
 #----------------------------------------------------------------
 
+w_fixme "fivem needs publisher metadata"
+w_fixme "fivem needs year metadata"
+
+w_metadata fivem games \
+    title="FiveM" \
+    publisher="?" \
+    year="?" \
+    media="download" \
+    file1="FiveM.exe"
+    #installed_exe1="$W_PROGRAMS_X86_WIN/EA Sports/FIFA 11 Demo/Game/fifa.exe"
+
+load_fivem()
+{
+    # Apparently changes too frequently
+    w_download https://runtime.fivem.net/client/FiveM.exe
+
+    "$WINE" "$W_CACHE/$W_PACKAGE/$file1"
+
+    case $? in
+        0) w_warn "File $file1 returned error code $? which seems to indicate failed installation with 'Win32 error 3 was encountered when updating FiveM.'" ;;
+        1) w_warn "File $file1 returned error code $? which seems to indicate failed installation" ;;
+        *) w_warn "File $file1 returned error code $? which is unknown to winetricks, please file a new issue if you see this message with full log and steps to reproduce"
+    esac
+}
+
+#----------------------------------------------------------------
+
 w_metadata hon games \
     title="Heroes of Newerth" \
     publisher="S2 Games" \
