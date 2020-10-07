@@ -20972,6 +20972,33 @@ load_splitsecond()
 
 #----------------------------------------------------------------
 
+# TODO: Metadata
+# DO_NOT_MERGE: Not tested
+
+w_metadata starcitizen games \
+    title="Split Second" \
+    publisher="Roberts Space Industries" \
+    year="2010" \
+    media="dvd" \
+    #file1="SplitSecond.iso" \
+    #installed_exe1="$W_PROGRAMS_X86_WIN/Disney Interactive Studios/Split Second/SplitSecond.exe"
+
+load_starcitizen()
+{
+    # TODO: Unable to download the game wtihout account -> Executable needed
+    if [ ! -e "$W_CACHE/$W_PACKAGE/todo.exe" ]; then
+        w_die "Expected file '$W_CACHE/$W_PACKAGE/todo.exe' with installation for starcitizen is not present, please download it manually."
+    elif [ ! -e "$W_CACHE/$W_PACKAGE/todo.exe" ]; then
+        w_debug "Expected file '$W_CACHE/$W_PACKAGE/todo.exe' is present"
+    fi
+
+    w_info "Trying to run the game"
+
+    w_try "$WINE" "$W_CACHE/$W_PACKAGE/todo.exe"
+}
+
+#----------------------------------------------------------------
+
 w_metadata spore games \
     title="Spore" \
     publisher="EA" \
